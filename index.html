@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minutas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F7F5F0;--surface:#FDFCF9;--surface2:#F0EDE6;
+  --border:#E2DDD5;--border2:#CEC9BF;
+  --text:#1A1814;--text2:#6B6660;--text3:#9C9890;
+  --accent:#2D4A3E;--accent-light:#E8F0EC;--accent-text:#1E3329;
+  --red:#8B3A3A;--red-light:#F5EDED;
+  --amber:#7A5C1E;--amber-light:#F7F1E3;
+  --blue:#2B4A72;--blue-light:#EBF0F7;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --radius:10px;--radius-sm:6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+.shell{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:10}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);letter-spacing:-.5px}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px;font-weight:300}
+.nav{padding:10px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 20px;font-size:13px;color:var(--text2);cursor:pointer;transition:background .15s,color .15s;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif}
+.nav-item svg{opacity:.7;flex-shrink:0}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-light);color:var(--accent-text);font-weight:500}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:6px}
+
+/* Main */
+.main{margin-left:220px;flex:1;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--text)}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.content{padding:26px 28px;max-width:860px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-body{padding:20px 24px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:background .15s,border-color .15s;font-weight:400;line-height:1;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:500}
+.btn-primary:hover{background:var(--accent-text);border-color:var(--accent-text)}
+.btn-sm{padding:4px 9px;font-size:12px}
+.btn-danger{color:var(--red);border-color:transparent;background:transparent}
+.btn-danger:hover{background:var(--red-light);border-color:#D4AAAA}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:var(--surface2)}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid .full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);transition:border-color .15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.field textarea{resize:vertical;min-height:130px;line-height:1.65}
+
+/* Tags */
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.tag-product{background:var(--accent-light);color:var(--accent-text)}
+.tag-date{background:var(--surface2);color:var(--text2);font-family:'DM Mono',monospace;font-size:10px}
+.tag-pending{background:var(--amber-light);color:var(--amber)}
+.tag-done{background:#EAF5EA;color:#2D6B2D}
+
+/* Acción tags */
+.tag-accion{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.2px;white-space:nowrap;border:1px solid transparent}
+.tag-decidir  {background:#FDE8E8;color:#7A1F1F;border-color:#F5C6C6}
+.tag-revisar  {background:#E8EEF8;color:#1F3D7A;border-color:#C6D4F0}
+.tag-informar {background:#EAF5EA;color:#1A5C1A;border-color:#B8DFB8}
+.tag-esperar  {background:#F7F1E3;color:#7A5C1E;border-color:#E8D8A8}
+.tag-delegar  {background:#F3EAF7;color:#5A1F7A;border-color:#DBBFEB}
+
+.type-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:var(--radius-sm);font-size:11px;font-weight:500}
+.type-minuta   {background:var(--accent-light);color:var(--accent-text)}
+.type-decision {background:var(--blue-light);color:var(--blue)}
+.type-feedback {background:#F5EDE3;color:#7A4A2A}
+.type-comentario{background:var(--surface2);color:var(--text2)}
+.type-otro     {background:#F3EAF7;color:#5A3A72}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.stat-num{font-family:'DM Serif Display',serif;font-size:28px;line-height:1;margin-bottom:4px}
+.stat-lbl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+
+/* Event cards */
+.event-list{display:flex;flex-direction:column;gap:10px}
+.event-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:15px 18px;box-shadow:var(--shadow);transition:border-color .2s}
+.event-card:hover{border-color:var(--border2)}
+.event-card.pending{border-left:3px solid #C49A2A}
+.event-card.done   {border-left:3px solid #4A9A5A}
+.event-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:5px}
+.event-title{font-size:14px;font-weight:500;color:var(--text);flex:1;line-height:1.4}
+.event-actions{display:flex;gap:3px;flex-shrink:0}
+.event-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:7px}
+.event-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.event-body{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;overflow:hidden;max-height:72px}
+.event-body.expanded{max-height:none}
+.event-footer{margin-top:7px;display:flex;align-items:center;gap:8px}
+.expand-btn{font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;padding:0}
+
+/* Extracto de líneas relevantes */
+.snippet-block{margin-top:8px;border-left:2px solid var(--border2);padding:6px 10px;display:flex;flex-direction:column;gap:4px}
+.snippet-line{font-size:12px;color:var(--text2);line-height:1.6;font-style:italic}
+.snippet-line mark{background:#FFF176;color:inherit;border-radius:2px;padding:0 2px;font-style:normal}
+
+/* Products */
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:22px}
+.product-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.product-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.product-card.active{border-color:var(--accent);background:var(--accent-light)}
+.product-card-name{font-size:14px;font-weight:500;margin-bottom:3px}
+.product-card-count{font-size:12px;color:var(--text3)}
+.product-bar{height:3px;background:var(--border);border-radius:2px;margin-top:9px;overflow:hidden}
+.product-bar-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
+.product-detail-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.product-detail-title{font-family:'DM Serif Display',serif;font-size:21px}
+
+/* Timeline */
+.timeline{position:relative}
+.timeline::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--border)}
+.timeline-item{display:flex;gap:16px;margin-bottom:18px}
+.timeline-dot{width:15px;height:15px;border-radius:50%;background:var(--surface);border:2px solid var(--border2);flex-shrink:0;margin-top:3px;z-index:1}
+.timeline-dot.type-minuta   {border-color:var(--accent)}
+.timeline-dot.type-decision {border-color:var(--blue);background:var(--blue-light)}
+.timeline-dot.type-feedback {border-color:#9A5A2A;background:#F5EDE3}
+.timeline-dot.type-comentario{border-color:var(--border2)}
+.timeline-content{flex:1}
+.timeline-date{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-bottom:4px}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:18px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.search-input-big{width:100%;padding:11px 12px 11px 40px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif}
+.search-input-big:focus{outline:none;border-color:var(--accent)}
+
+/* Empty */
+.empty{text-align:center;padding:36px 20px;color:var(--text3);font-size:13px}
+.empty-icon{font-size:28px;margin-bottom:8px;opacity:.5}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--text);color:var(--surface);padding:10px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateY(0)}
+
+.section{display:none}.section.active{display:block}
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+mark{background:#FFF176;color:inherit;border-radius:2px;padding:0 2px}
+.checkbox-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text)}
+.checkbox-wrap input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+#import-input{display:none}
+
+/* Acción selector en form */
+.accion-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.accion-opt{padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;user-select:none}
+.accion-opt:hover{opacity:.8}
+.accion-opt.sel{box-shadow:0 0 0 2px var(--text)}
+
+@media(max-width:700px){.sidebar{display:none}.main{margin-left:0}.form-grid{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.event-card{animation:fadeIn .18s ease both}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Sidebar ─────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>Minutas</h1>
+    <p>tu registro de productos</p>
+  </div>
+  <nav class="nav">
+    <button class="nav-item active" onclick="ir('agregar',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Agregar evento
+    </button>
+    <button class="nav-item" onclick="ir('productos',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Por producto
+    </button>
+    <button class="nav-item" onclick="ir('buscar',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>Búsqueda global
+    </button>
+    <button class="nav-item" onclick="ir('timeline',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-6"/></svg>Timeline
+    </button>
+    <button class="nav-item" onclick="ir('pendientes',this)">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg>Pendientes
+      <span id="badge-pend" style="margin-left:auto;background:var(--amber-light);color:var(--amber);font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600;display:none"></span>
+    </button>
+  </nav>
+  <div class="sidebar-footer" style="flex-direction:column;gap:8px">
+    <div id="gdrive-status" style="font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px;min-height:18px"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-ghost" id="btn-gdrive-connect" onclick="gdriveAuth()" style="color:var(--accent);border-color:var(--accent);flex:1">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Google Drive
+      </button>
+      <button class="btn btn-sm btn-ghost" onclick="exportarJSON()" title="Backup local">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <button class="btn btn-sm btn-ghost" onclick="document.getElementById('import-input').click()" title="Importar backup">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+    </div>
+    <input type="file" id="import-input" accept=".json" onchange="importarJSON(event)">
+  </div>
+</aside>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- AGREGAR -->
+  <div id="sec-agregar" class="section active">
+    <div class="topbar"><div class="topbar-title">Agregar evento</div></div>
+    <div class="content">
+      <div class="card"><div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>Fecha</label>
+            <input type="date" id="inp-fecha">
+          </div>
+          <div class="field">
+            <label>Tipo</label>
+            <select id="inp-tipo">
+              <option value="minuta">📋 Minuta de reunión</option>
+              <option value="comentario">💬 Comentario</option>
+              <option value="decision">✅ Decisión</option>
+              <option value="feedback">🔁 Feedback</option>
+              <option value="otro">📌 Otro</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Título</label>
+            <input type="text" id="inp-titulo" placeholder="Ej: Reunión con equipo de ventas — revisión de roadmap">
+          </div>
+          <div class="field full">
+            <label>Productos relacionados <span style="text-transform:none;letter-spacing:0;font-weight:300;color:var(--text3)">(separados por coma · o detectalos con IA abajo)</span></label>
+            <input type="text" id="inp-productos" placeholder="Ej: App Mobile, Dashboard, API v3" oninput="mostrarSuggs()">
+            <div id="prod-suggs" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px"></div>
+            <div id="prod-inferidos" style="display:none;margin-top:8px;padding:10px 12px;background:var(--accent-light);border-radius:var(--radius-sm);border:1px solid #C5DDD1">
+              <div style="font-size:11px;font-weight:500;color:var(--accent-text);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Productos detectados — hacé click para agregar</div>
+              <div id="prod-inferidos-chips" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Tags de acción <span style="text-transform:none;letter-spacing:0;font-weight:300;color:var(--text3)">(podés elegir más de uno)</span></label>
+            <div class="accion-grid" id="accion-grid">
+              <span class="accion-opt tag-decidir"  data-val="decidir"  onclick="toggleAccion(this)">🔴 decidir</span>
+              <span class="accion-opt tag-revisar"  data-val="revisar"  onclick="toggleAccion(this)">🔵 revisar</span>
+              <span class="accion-opt tag-informar" data-val="informar" onclick="toggleAccion(this)">🟢 informar</span>
+              <span class="accion-opt tag-esperar"  data-val="esperar"  onclick="toggleAccion(this)">🟡 esperar</span>
+              <span class="accion-opt tag-delegar"  data-val="delegar"  onclick="toggleAccion(this)">🟣 delegar</span>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Contenido <span style="text-transform:none;letter-spacing:0;font-weight:300;color:var(--text3)">(pegá tu minuta acá)</span></label>
+            <textarea id="inp-cuerpo" placeholder="Pegá el texto de tu minuta, comentarios, decisiones..."></textarea>
+            <div style="margin-top:6px">
+              <button class="btn btn-sm" id="btn-inferir" onclick="inferirProductos()" type="button" style="gap:6px">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                <span id="btn-inferir-txt">Detectar productos con IA</span>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Participantes <span style="text-transform:none;letter-spacing:0;font-weight:300;color:var(--text3)">(opcional)</span></label>
+            <input type="text" id="inp-participantes" placeholder="Juan, María, Carlos">
+          </div>
+          <div class="field" style="justify-content:flex-end;padding-top:4px">
+            <label>&nbsp;</label>
+            <label class="checkbox-wrap">
+              <input type="checkbox" id="inp-pending">
+              <span>Marcar como pendiente de seguimiento</span>
+            </label>
+          </div>
+        </div>
+        <hr class="divider">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="guardarEvento()">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Guardar
+          </button>
+          <button class="btn" onclick="limpiarForm()">Limpiar</button>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <div id="sec-productos" class="section">
+    <div class="topbar">
+      <div class="topbar-title">Por producto</div>
+      <div class="topbar-actions">
+        <input type="text" id="search-prod" placeholder="Filtrar..." style="width:180px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif" oninput="renderProductos()">
+      </div>
+    </div>
+    <div class="content">
+      <div class="stats-grid" id="stats-container"></div>
+      <div id="products-grid" class="products-grid"></div>
+      <div id="product-detail" style="display:none">
+        <div class="product-detail-header">
+          <div>
+            <div class="product-detail-title" id="detail-title"></div>
+            <div id="detail-meta" style="font-size:12px;color:var(--text3);margin-top:2px"></div>
+          </div>
+          <button class="btn btn-sm" onclick="cerrarDetalle()">✕ Cerrar</button>
+        </div>
+        <div id="detail-events" class="event-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUSCAR -->
+  <div id="sec-buscar" class="section">
+    <div class="topbar"><div class="topbar-title">Búsqueda global</div></div>
+    <div class="content">
+      <div class="search-wrap">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input-big" type="text" id="search-global" placeholder="Buscá en títulos, contenido, productos, participantes..." oninput="buscarGlobal()">
+      </div>
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div id="sec-timeline" class="section">
+    <div class="topbar">
+      <div class="topbar-title">Timeline</div>
+      <div class="topbar-actions">
+        <select id="tl-tipo" onchange="renderTimeline()" style="font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif">
+          <option value="">Todos los tipos</option>
+          <option value="minuta">Minutas</option>
+          <option value="decision">Decisiones</option>
+          <option value="feedback">Feedback</option>
+          <option value="comentario">Comentarios</option>
+        </select>
+      </div>
+    </div>
+    <div class="content"><div id="timeline-container"></div></div>
+  </div>
+
+  <!-- PENDIENTES -->
+  <div id="sec-pendientes" class="section">
+    <div class="topbar"><div class="topbar-title">Pendientes de seguimiento</div></div>
+    <div class="content"><div id="pendientes-list"></div></div>
+  </div>
+
+</main>
+</div>
+
+<!-- ── Modal edición ─────────────────────────────────────────────────── -->
+<div id="modal-overlay" onclick="modalOverlayClick(event)" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;align-items:center;justify-content:center;padding:20px">
+  <div id="modal-box" style="background:var(--surface);border-radius:var(--radius);box-shadow:0 8px 40px rgba(0,0,0,.18);width:100%;max-width:620px;max-height:90vh;overflow-y:auto">
+    <div style="padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <span style="font-family:'DM Serif Display',serif;font-size:17px">Editar evento</span>
+      <button class="btn btn-sm btn-ghost" onclick="cerrarModal()" style="font-size:16px;padding:4px 8px">&#x2715;</button>
+    </div>
+    <div style="padding:20px 22px">
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="edit-fecha">
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select id="edit-tipo">
+            <option value="minuta">&#x1F4CB; Minuta de reunión</option>
+            <option value="comentario">&#x1F4AC; Comentario</option>
+            <option value="decision">&#x2705; Decisión</option>
+            <option value="feedback">&#x1F501; Feedback</option>
+            <option value="otro">&#x1F4CC; Otro</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>Título</label>
+          <input type="text" id="edit-titulo">
+        </div>
+        <div class="field full">
+          <label>Productos <span style="text-transform:none;letter-spacing:0;font-weight:300;color:var(--text3)">(separados por coma)</span></label>
+          <input type="text" id="edit-productos">
+        </div>
+        <div class="field full">
+          <label>Tags de acción</label>
+          <div class="accion-grid" id="edit-accion-grid">
+            <span class="accion-opt tag-decidir"  data-val="decidir"  onclick="toggleAccionEdit(this)">&#x1F534; decidir</span>
+            <span class="accion-opt tag-revisar"  data-val="revisar"  onclick="toggleAccionEdit(this)">&#x1F535; revisar</span>
+            <span class="accion-opt tag-informar" data-val="informar" onclick="toggleAccionEdit(this)">&#x1F7E2; informar</span>
+            <span class="accion-opt tag-esperar"  data-val="esperar"  onclick="toggleAccionEdit(this)">&#x1F7E1; esperar</span>
+            <span class="accion-opt tag-delegar"  data-val="delegar"  onclick="toggleAccionEdit(this)">&#x1F7E3; delegar</span>
+          </div>
+        </div>
+        <div class="field full">
+          <label>Contenido</label>
+          <textarea id="edit-cuerpo" style="min-height:160px"></textarea>
+        </div>
+        <div class="field">
+          <label>Participantes</label>
+          <input type="text" id="edit-participantes">
+        </div>
+        <div class="field" style="justify-content:flex-end;padding-top:4px">
+          <label>&nbsp;</label>
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="edit-pending">
+            <span>Pendiente de seguimiento</span>
+          </label>
+        </div>
+      </div>
+      <hr class="divider">
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="guardarEdicion()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Guardar cambios
+        </button>
+        <button class="btn" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE = 'minutas-v3';
+let eventos = [];
+let productoActivo = null;
+
+// ── Persistencia ──────────────────────────────────────────────────────────────
+
+// Google Drive OAuth — usa el Client ID público de Google para OAuth implícito
+const GD_CLIENT_ID   = ''; // se completa en gdriveAuth si el usuario tiene token
+const GD_FILE_NAME   = 'minutas-data.json';
+const GD_SCOPE       = 'https://www.googleapis.com/auth/drive.file';
+const GD_TOKEN_KEY   = 'minutas-gd-token';
+const GD_FILEID_KEY  = 'minutas-gd-fileid';
+
+let gdToken   = null;   // access token activo
+let gdFileId  = null;   // ID del archivo en Drive
+let gdSyncing = false;
+
+// ── Helpers de estado visual ──────────────────────────────────────────────────
+
+function setStatus(msg, color) {
+  const el = document.getElementById('gdrive-status');
+  if (!el) return;
+  el.innerHTML = msg;
+  el.style.color = color || 'var(--text3)';
+}
+
+function setSyncing(on) {
+  gdSyncing = on;
+  const btn = document.getElementById('btn-gdrive-connect');
+  if (!btn) return;
+  if (on) {
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></svg> Sincronizando...';
+    btn.disabled = true;
+  } else if (gdToken) {
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Conectado';
+    btn.disabled = false;
+    btn.style.color = 'var(--accent)';
+  } else {
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Google Drive';
+    btn.disabled = false;
+  }
+}
+
+// ── OAuth — abre popup de Google ──────────────────────────────────────────────
+
+function gdriveAuth() {
+  // Usar Google Identity Services (GIS) con token flow — no requiere backend
+  const clientId = prompt(
+    'Para conectar Google Drive necesitás un Client ID de Google OAuth.\n\n' +
+    'Pasos rápidos:\n' +
+    '1. Ir a console.cloud.google.com\n' +
+    '2. Crear proyecto → APIs → Google Drive API → Habilitar\n' +
+    '3. Credenciales → Crear credencial → ID de cliente OAuth\n' +
+    '   Tipo: Aplicación web\n' +
+    '   Origen autorizado: file:// (o tu dominio si lo subís)\n' +
+    '4. Copiar el Client ID y pegarlo acá\n\n' +
+    'Client ID:'
+  );
+  if (!clientId || !clientId.includes('.apps.googleusercontent.com')) {
+    if (clientId !== null) toast('Client ID inválido');
+    return;
+  }
+  localStorage.setItem('minutas-gd-clientid', clientId);
+  _launchOAuth(clientId);
+}
+
+function _launchOAuth(clientId) {
+  const params = new URLSearchParams({
+    client_id: clientId,
+    redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+    response_type: 'token',
+    scope: GD_SCOPE,
+    include_granted_scopes: 'true',
+  });
+  // Abre popup de Google
+  const w = window.open(
+    'https://accounts.google.com/o/oauth2/v2/auth?' + params,
+    'gdrive-auth',
+    'width=500,height=620,left=200,top=100'
+  );
+
+  // Pedir al usuario que pegue el token luego de autorizar
+  setTimeout(() => {
+    const token = prompt(
+      'En la ventana de Google que se abrió:\n' +
+      '1. Iniciá sesión y autorizá el acceso\n' +
+      '2. Copiá el "access_token" que aparece en la URL de redirección\n\n' +
+      '(La URL tendrá algo como: ...#access_token=ya29.xxxx&...)\n\n' +
+      'Pegá acá solo el token (empieza con "ya29."):'
+    );
+    if (token && token.startsWith('ya29.')) {
+      gdToken = token;
+      localStorage.setItem(GD_TOKEN_KEY, token);
+      setStatus('✓ Conectado a Drive', 'var(--accent)');
+      setSyncing(false);
+      toast('Google Drive conectado ✓');
+      // Intentar cargar datos desde Drive
+      cargarDesdeDrive();
+    } else if (token !== null) {
+      toast('Token inválido. Debe empezar con "ya29."');
+    }
+  }, 2000);
+}
+
+// ── Guardar en Drive ──────────────────────────────────────────────────────────
+
+async function guardarEnDrive() {
+  if (!gdToken) return;
+  setSyncing(true);
+  try {
+    const body = JSON.stringify(eventos, null, 2);
+    const blob = new Blob([body], { type: 'application/json' });
+
+    if (gdFileId) {
+      // Actualizar archivo existente
+      await fetch(`https://www.googleapis.com/upload/drive/v3/files/${gdFileId}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${gdToken}`, 'Content-Type': 'application/json' },
+        body
+      });
+    } else {
+      // Crear archivo nuevo
+      const meta = { name: GD_FILE_NAME, mimeType: 'application/json' };
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)], { type: 'application/json' }));
+      form.append('file', blob);
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${gdToken}` },
+        body: form
+      });
+      if (!res.ok) { handleDriveError(res.status); return; }
+      const data = await res.json();
+      gdFileId = data.id;
+      localStorage.setItem(GD_FILEID_KEY, gdFileId);
+    }
+    setStatus('✓ Guardado en Drive ' + new Date().toLocaleTimeString('es-AR', {hour:'2-digit',minute:'2-digit'}), 'var(--accent)');
+  } catch(e) {
+    setStatus('⚠ Error al guardar', 'var(--amber)');
+    console.error('Drive save error:', e);
+  } finally {
+    setSyncing(false);
+  }
+}
+
+// ── Cargar desde Drive ────────────────────────────────────────────────────────
+
+async function cargarDesdeDrive() {
+  if (!gdToken) return;
+  setSyncing(true);
+  setStatus('Buscando en Drive...', 'var(--text3)');
+  try {
+    // Buscar el archivo por nombre
+    const q = encodeURIComponent(`name='${GD_FILE_NAME}' and trashed=false`);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,modifiedTime)`, {
+      headers: { Authorization: `Bearer ${gdToken}` }
+    });
+    if (!res.ok) { handleDriveError(res.status); return; }
+    const data = await res.json();
+
+    if (data.files && data.files.length > 0) {
+      gdFileId = data.files[0].id;
+      localStorage.setItem(GD_FILEID_KEY, gdFileId);
+
+      // Descargar contenido
+      const fileRes = await fetch(`https://www.googleapis.com/drive/v3/files/${gdFileId}?alt=media`, {
+        headers: { Authorization: `Bearer ${gdToken}` }
+      });
+      if (!fileRes.ok) { handleDriveError(fileRes.status); return; }
+      const remoto = await fileRes.json();
+
+      if (Array.isArray(remoto) && remoto.length > 0) {
+        // Merge: prioridad al remoto, agregar locales que no estén en remoto
+        const ids = new Set(remoto.map(e => e.id));
+        const soloLocales = eventos.filter(e => !ids.has(e.id));
+        eventos = [...remoto, ...soloLocales].sort((a,b)=>b.id-a.id);
+        localStorage.setItem(STORE, JSON.stringify(eventos));
+        badgePend();
+        refresco();
+        setStatus('✓ Sincronizado con Drive', 'var(--accent)');
+        toast('Datos cargados desde Drive ✓');
+      } else {
+        // Archivo vacío en Drive, subir los locales
+        setStatus('✓ Conectado a Drive', 'var(--accent)');
+        await guardarEnDrive();
+      }
+    } else {
+      // No existe el archivo, se va a crear cuando guardemos
+      setStatus('✓ Conectado (archivo nuevo)', 'var(--accent)');
+    }
+  } catch(e) {
+    setStatus('⚠ Error al leer Drive', 'var(--amber)');
+    console.error('Drive load error:', e);
+  } finally {
+    setSyncing(false);
+  }
+}
+
+function handleDriveError(status) {
+  if (status === 401) {
+    // Token expirado
+    gdToken = null;
+    localStorage.removeItem(GD_TOKEN_KEY);
+    setStatus('⚠ Sesión expirada — reconectá', 'var(--red)');
+    setSyncing(false);
+    toast('Token de Google expirado. Hacé click en "Google Drive" para reconectar.');
+  } else {
+    setStatus('⚠ Error Drive (' + status + ')', 'var(--amber)');
+    setSyncing(false);
+  }
+}
+
+// ── Persistencia local + Drive ────────────────────────────────────────────────
+
+function cargar() {
+  try { const r = localStorage.getItem(STORE); if (r) eventos = JSON.parse(r); } catch(e) { eventos = []; }
+  document.getElementById('inp-fecha').value = hoy();
+  badgePend();
+
+  // Restaurar token y fileId guardados
+  const savedToken  = localStorage.getItem(GD_TOKEN_KEY);
+  const savedFileId = localStorage.getItem(GD_FILEID_KEY);
+  const savedCid    = localStorage.getItem('minutas-gd-clientid');
+
+  if (savedToken) {
+    gdToken  = savedToken;
+    gdFileId = savedFileId || null;
+    setStatus('✓ Drive conectado', 'var(--accent)');
+    setSyncing(false);
+    cargarDesdeDrive();
+  }
+}
+
+function guardar() {
+  localStorage.setItem(STORE, JSON.stringify(eventos));
+  badgePend();
+  if (gdToken) guardarEnDrive();
+}
+
+function hoy() { return new Date().toISOString().slice(0,10); }
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
+
+function ir(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id==='productos')  renderProductos();
+  if (id==='timeline')   renderTimeline();
+  if (id==='pendientes') renderPendientes();
+  if (id==='buscar') { document.getElementById('search-results').innerHTML=''; document.getElementById('search-global').value=''; }
+}
+
+// ── Guardar evento ────────────────────────────────────────────────────────────
+
+function guardarEvento() {
+  const titulo = document.getElementById('inp-titulo').value.trim();
+  const cuerpo = document.getElementById('inp-cuerpo').value.trim();
+  if (!titulo && !cuerpo) { toast('Completá al menos el título o el contenido'); return; }
+
+  const prods = document.getElementById('inp-productos').value
+    .split(',').map(p=>p.trim()).filter(Boolean);
+
+  const acciones = [...document.querySelectorAll('.accion-opt.sel')]
+    .map(el => el.dataset.val);
+
+  eventos.push({
+    id: Date.now(),
+    fecha: document.getElementById('inp-fecha').value,
+    tipo: document.getElementById('inp-tipo').value,
+    titulo: titulo || '(sin título)',
+    productos: prods,
+    acciones,
+    cuerpo,
+    participantes: document.getElementById('inp-participantes').value.trim(),
+    pending: document.getElementById('inp-pending').checked,
+    done: false
+  });
+
+  guardar();
+  toast('Evento guardado ✓');
+  limpiarForm();
+}
+
+function limpiarForm() {
+  ['inp-titulo','inp-cuerpo','inp-participantes','inp-productos'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('inp-fecha').value = hoy();
+  document.getElementById('inp-tipo').value = 'minuta';
+  document.getElementById('inp-pending').checked = false;
+  document.querySelectorAll('.accion-opt').forEach(el => el.classList.remove('sel'));
+  document.getElementById('prod-suggs').innerHTML = '';
+}
+
+function toggleAccion(el) { el.classList.toggle('sel'); }
+
+// ── Sugerencias de productos ──────────────────────────────────────────────────
+
+function mostrarSuggs() {
+  const ya = document.getElementById('inp-productos').value.split(',').map(p=>p.trim());
+  const c = document.getElementById('prod-suggs');
+  const suggs = todosProductos().filter(([p]) => !ya.includes(p)).slice(0,7);
+  c.innerHTML = suggs.map(([p]) =>
+    `<span class="tag tag-product" style="cursor:pointer" onclick="agregarProd('${p.replace(/'/g,"\\'")}')">+ ${xss(p)}</span>`
+  ).join('');
+}
+
+function agregarProd(p) {
+  const inp = document.getElementById('inp-productos');
+  const ya = inp.value.split(',').map(x=>x.trim()).filter(Boolean);
+  if (!ya.includes(p)) ya.push(p);
+  inp.value = ya.join(', ');
+  mostrarSuggs();
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+function renderStats() {
+  const total = eventos.length;
+  const prods = new Set(eventos.flatMap(e=>e.productos||[])).size;
+  const mes = new Date(); mes.setDate(1);
+  const esteMes = eventos.filter(e=>e.fecha>=mes.toISOString().slice(0,10)).length;
+  const pend = eventos.filter(e=>e.pending&&!e.done).length;
+  const items = [
+    [total, 'Eventos'],
+    [prods, 'Productos'],
+    [esteMes, 'Este mes'],
+    [pend, 'Pendientes'],
+  ];
+  document.getElementById('stats-container').innerHTML = items.map(([n,lbl]) =>
+    `<div class="stat-card">
+      <div class="stat-num" style="color:${lbl==='Pendientes'&&n>0?'var(--amber)':'var(--text)'}">${n}</div>
+      <div class="stat-lbl">${lbl}</div>
+    </div>`
+  ).join('');
+}
+
+// ── Productos ─────────────────────────────────────────────────────────────────
+
+function todosProductos() {
+  const m = {};
+  eventos.forEach(e => (e.productos||[]).forEach(p => { m[p]=(m[p]||0)+1; }));
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+
+// Mapa global de índice → nombre de producto (evita pasar strings por atributos HTML)
+let _prodMap = {};
+
+function renderProductos() {
+  renderStats();
+  const q = (document.getElementById('search-prod')?.value||'').toLowerCase();
+  const prods = todosProductos().filter(([p])=>!q||p.toLowerCase().includes(q));
+  const max = prods[0]?.[1]||1;
+  const c = document.getElementById('products-grid');
+  if (!prods.length) { c.innerHTML='<div class="empty"><div class="empty-icon">📦</div>Sin productos registrados</div>'; return; }
+  _prodMap = {};
+  c.innerHTML = prods.map(([p,n], i) => {
+    _prodMap[i] = p;
+    return `<div class="product-card ${productoActivo===p?'active':''}" onclick="selProducto(${i})">
+      <div class="product-card-name">${xss(p)}</div>
+      <div class="product-card-count">${n} evento${n>1?'s':''}</div>
+      <div class="product-bar"><div class="product-bar-fill" style="width:${Math.round(n/max*100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function selProducto(idx) {
+  const p = _prodMap[idx];
+  if (!p) return;
+  productoActivo = productoActivo===p ? null : p;
+  renderProductos();
+  if (!productoActivo) { document.getElementById('product-detail').style.display='none'; return; }
+
+  const evs = eventos
+    .filter(e=>(e.productos||[]).includes(p))
+    .sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+  document.getElementById('detail-title').textContent = p;
+  const first = evs[evs.length-1]?.fecha, last = evs[0]?.fecha;
+  document.getElementById('detail-meta').textContent =
+    `${evs.length} evento${evs.length>1?'s':''} · ${first?fechaFmt(first)+' → '+fechaFmt(last):''}`;
+
+  // En el detalle de producto mostramos las líneas relevantes
+  document.getElementById('detail-events').innerHTML =
+    evs.length ? evs.map(e => cardHTML(e, p, true)).join('') :
+    '<div class="empty">Sin eventos</div>';
+
+  document.getElementById('product-detail').style.display='block';
+  setTimeout(()=>document.getElementById('product-detail').scrollIntoView({behavior:'smooth',block:'start'}), 50);
+}
+
+function cerrarDetalle() {
+  productoActivo=null;
+  document.getElementById('product-detail').style.display='none';
+  renderProductos();
+}
+
+// ── Búsqueda global ───────────────────────────────────────────────────────────
+
+function buscarGlobal() {
+  const q = document.getElementById('search-global').value.trim();
+  const c = document.getElementById('search-results');
+  if (!q) { c.innerHTML=''; return; }
+  const ql = q.toLowerCase();
+
+  const resultados = eventos.filter(e =>
+    e.titulo.toLowerCase().includes(ql) ||
+    (e.cuerpo||'').toLowerCase().includes(ql) ||
+    (e.participantes||'').toLowerCase().includes(ql) ||
+    (e.productos||[]).some(p=>p.toLowerCase().includes(ql)) ||
+    (e.acciones||[]).some(a=>a.toLowerCase().includes(ql))
+  ).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+
+  if (!resultados.length) {
+    c.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div>Sin resultados para "${xss(q)}"</div>`;
+    return;
+  }
+
+  c.innerHTML = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${resultados.length} resultado${resultados.length>1?'s':''}</div>
+    <div class="event-list">${resultados.map(e=>cardHTML(e, q, false)).join('')}</div>`;
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+function renderTimeline() {
+  const tipo = document.getElementById('tl-tipo')?.value||'';
+  const evs = eventos.filter(e=>!tipo||e.tipo===tipo).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  const c = document.getElementById('timeline-container');
+  if (!evs.length) { c.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Sin eventos</div>'; return; }
+
+  const byMonth = {};
+  evs.forEach(e=>{ const k=e.fecha.slice(0,7); if(!byMonth[k])byMonth[k]=[]; byMonth[k].push(e); });
+
+  c.innerHTML = Object.entries(byMonth).map(([mes, list])=>{
+    const [y,m] = mes.split('-');
+    const lbl = new Date(+y,+m-1,1).toLocaleDateString('es-AR',{month:'long',year:'numeric'});
+    return `<div style="margin-bottom:26px">
+      <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">${lbl}</div>
+      <div class="timeline">${list.map(e=>`
+        <div class="timeline-item">
+          <div class="timeline-dot type-${e.tipo}"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">${fechaFmt(e.fecha)}</div>
+            ${cardHTML(e, null, false)}
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Pendientes ─────────────────────────────────────────────────────────────────
+
+function renderPendientes() {
+  const pend = eventos.filter(e=>e.pending&&!e.done).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  const done = eventos.filter(e=>e.pending&&e.done).sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  let html='';
+  if (!pend.length&&!done.length) {
+    html='<div class="empty"><div class="empty-icon">✅</div>No hay pendientes marcados.</div>';
+  } else {
+    if (pend.length) html+=`<div style="font-size:11px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Por resolver (${pend.length})</div>
+      <div class="event-list" style="margin-bottom:22px">${pend.map(e=>cardHTML(e,null,false)).join('')}</div>`;
+    if (done.length) html+=`<div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Resueltos (${done.length})</div>
+      <div class="event-list">${done.map(e=>cardHTML(e,null,false)).join('')}</div>`;
+  }
+  document.getElementById('pendientes-list').innerHTML=html;
+}
+
+function badgePend() {
+  const n = eventos.filter(e=>e.pending&&!e.done).length;
+  const b = document.getElementById('badge-pend');
+  b.textContent=n; b.style.display=n>0?'inline':'none';
+}
+
+// ── Card HTML ─────────────────────────────────────────────────────────────────
+// extractLines=true → muestra solo líneas del cuerpo que mencionan `keyword`
+
+function cardHTML(e, keyword, extractLines) {
+  const prods = (e.productos||[]).map(p=>`<span class="tag tag-product">${xss(p)}</span>`).join('');
+  const accs  = (e.acciones||[]).map(a=>`<span class="tag tag-accion tag-${a}">${accionLabel(a)}</span>`).join('');
+
+  let tituloHTML = xss(e.titulo);
+  if (keyword) {
+    tituloHTML = highlight(tituloHTML, keyword);
+  }
+
+  const pendTag = e.pending&&!e.done ? '<span class="tag tag-pending">⏳ pendiente</span>'
+                : e.done             ? '<span class="tag tag-done">✓ resuelto</span>' : '';
+
+  // Contenido a mostrar
+  let cuerpoHTML = '';
+  if (e.cuerpo) {
+    if (extractLines && keyword) {
+      // Extrae solo líneas relevantes
+      const lineas = extractRelevantLines(e.cuerpo, keyword);
+      if (lineas.length) {
+        cuerpoHTML = `<div class="snippet-block">${lineas.map(l=>
+          `<div class="snippet-line">${highlight(xss(l), keyword)}</div>`
+        ).join('')}</div>`;
+      }
+    } else {
+      // Muestra cuerpo colapsado con opción de expandir
+      const hasLong = e.cuerpo.length > 220;
+      let body = xss(e.cuerpo);
+      if (keyword) body = highlight(body, keyword);
+      cuerpoHTML = `<div class="event-body" id="body-${e.id}" style="white-space:pre-wrap">${body}</div>`;
+      if (hasLong) cuerpoHTML += `<div class="event-footer"><button class="expand-btn" id="xbtn-${e.id}" onclick="toggleBody(${e.id})">Ver más ▾</button></div>`;
+    }
+  }
+
+  return `<div class="event-card ${e.pending&&!e.done?'pending':e.done?'done':''}" data-id="${e.id}">
+    <div class="event-header">
+      <div class="event-title">${tituloHTML}</div>
+      <div class="event-actions">
+        ${e.pending&&!e.done?`<button class="btn btn-sm" onclick="marcarDone(${e.id})" title="Marcar resuelto">✓</button>`:''}
+        <button class="btn btn-sm" onclick="abrirEdicion(${e.id})" title="Editar" style="color:var(--text2)">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="borrar(${e.id})">✕</button>
+      </div>
+    </div>
+    <div class="event-meta">
+      <span class="type-badge type-${e.tipo}">${tipoLabel(e.tipo)}</span>
+      <span class="tag tag-date">${fechaFmt(e.fecha)}</span>
+      ${e.participantes?`<span style="font-size:12px;color:var(--text3)">· ${xss(e.participantes)}</span>`:''}
+      ${pendTag}
+    </div>
+    ${prods||accs?`<div class="event-tags">${prods}${accs}</div>`:''}
+    ${cuerpoHTML}
+  </div>`;
+}
+
+// ── Extracción de líneas relevantes ──────────────────────────────────────────
+
+function extractRelevantLines(texto, keyword) {
+  if (!texto||!keyword) return [];
+  const kl = keyword.toLowerCase();
+  // Dividir por saltos de línea o puntos seguidos de espacio
+  const lineas = texto.split(/\n|(?<=\.)\s+/).map(l=>l.trim()).filter(l=>l.length>1);
+  return lineas.filter(l => l.toLowerCase().includes(kl));
+}
+
+// ── Acciones ───────────────────────────────────────────────────────────────────
+
+function borrar(id) {
+  if (!confirm('¿Borrar este evento?')) return;
+  eventos = eventos.filter(e => e.id !== id);
+  guardar();
+  toast('Evento borrado');
+  // Quitar del DOM directamente (evita re-render complejo)
+  document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.remove());
+  // Si estamos en productos, actualizar stats y grid
+  const activo = document.querySelector('.section.active')?.id;
+  if (activo==='sec-productos') { renderStats(); renderProductos(); if(productoActivo) { const idx = Object.entries(_prodMap).find(([,v])=>v===productoActivo)?.[0]; if(idx!=null) selProducto(idx); } }
+  badgePend();
+}
+
+function marcarDone(id) {
+  const ev = eventos.find(e=>e.id===id);
+  if (ev) { ev.done=true; guardar(); toast('Marcado como resuelto ✓'); refresco(); }
+}
+
+// ── Modal edición ──────────────────────────────────────────────────────────────
+
+let _editId = null;
+
+function abrirEdicion(id) {
+  const ev = eventos.find(e=>e.id===id);
+  if (!ev) return;
+  _editId = id;
+  document.getElementById('edit-fecha').value         = ev.fecha||'';
+  document.getElementById('edit-tipo').value          = ev.tipo||'minuta';
+  document.getElementById('edit-titulo').value        = ev.titulo||'';
+  document.getElementById('edit-productos').value     = (ev.productos||[]).join(', ');
+  document.getElementById('edit-cuerpo').value        = ev.cuerpo||'';
+  document.getElementById('edit-participantes').value = ev.participantes||'';
+  document.getElementById('edit-pending').checked     = !!ev.pending;
+  const acc = ev.acciones||[];
+  document.querySelectorAll('#edit-accion-grid .accion-opt').forEach(el => {
+    el.classList.toggle('sel', acc.includes(el.dataset.val));
+  });
+  const overlay = document.getElementById('modal-overlay');
+  overlay.style.display = 'flex';
+}
+
+function cerrarModal() {
+  document.getElementById('modal-overlay').style.display = 'none';
+  _editId = null;
+}
+
+function modalOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) cerrarModal();
+}
+
+function toggleAccionEdit(el) { el.classList.toggle('sel'); }
+
+function guardarEdicion() {
+  const ev = eventos.find(e=>e.id===_editId);
+  if (!ev) return;
+  ev.fecha         = document.getElementById('edit-fecha').value;
+  ev.tipo          = document.getElementById('edit-tipo').value;
+  ev.titulo        = document.getElementById('edit-titulo').value.trim() || '(sin título)';
+  ev.productos     = document.getElementById('edit-productos').value.split(',').map(p=>p.trim()).filter(Boolean);
+  ev.cuerpo        = document.getElementById('edit-cuerpo').value;
+  ev.participantes = document.getElementById('edit-participantes').value.trim();
+  ev.pending       = document.getElementById('edit-pending').checked;
+  ev.acciones      = [...document.querySelectorAll('#edit-accion-grid .accion-opt.sel')].map(el=>el.dataset.val);
+  guardar();
+  cerrarModal();
+  toast('Cambios guardados ✓');
+  refresco();
+}
+
+function toggleBody(id) {
+  const b = document.getElementById('body-'+id);
+  const btn = document.getElementById('xbtn-'+id);
+  if (!b) return;
+  b.classList.toggle('expanded');
+  if (btn) btn.textContent = b.classList.contains('expanded')?'Ver menos ▴':'Ver más ▾';
+}
+
+function refresco() {
+  const id = document.querySelector('.section.active')?.id;
+  if (id==='sec-productos')  renderProductos();
+  if (id==='sec-timeline')   renderTimeline();
+  if (id==='sec-pendientes') renderPendientes();
+  if (id==='sec-buscar')     buscarGlobal();
+}
+
+// ── Export / Import ────────────────────────────────────────────────────────────
+
+function exportarJSON() {
+  const blob = new Blob([JSON.stringify(eventos,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `minutas-backup-${hoy()}.json`;
+  a.click();
+  toast('Backup exportado ✓');
+}
+
+function importarJSON(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error();
+      const nuevos = data.filter(d=>!eventos.some(x=>x.id===d.id));
+      eventos = [...eventos,...nuevos];
+      guardar(); toast(`${nuevos.length} eventos importados ✓`); refresco();
+    } catch { toast('Error: JSON inválido'); }
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function xss(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function highlight(html, kw) {
+  if (!kw) return html;
+  return html.replace(new RegExp('('+kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>');
+}
+
+function fechaFmt(f) {
+  if (!f) return '';
+  const [y,m,d] = f.split('-');
+  return new Date(+y,+m-1,+d).toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+function tipoLabel(t) {
+  return {minuta:'📋 Minuta',comentario:'💬 Comentario',decision:'✅ Decisión',feedback:'🔁 Feedback',otro:'📌 Otro'}[t]||t;
+}
+
+function accionLabel(a) {
+  return {decidir:'🔴 decidir',revisar:'🔵 revisar',informar:'🟢 informar',esperar:'🟡 esperar',delegar:'🟣 delegar'}[a]||a;
+}
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── Inferir productos con IA ──────────────────────────────────────────────────
+
+async function inferirProductos() {
+  const cuerpo = document.getElementById('inp-cuerpo').value.trim();
+  const titulo = document.getElementById('inp-titulo').value.trim();
+  const texto = [titulo, cuerpo].filter(Boolean).join('\n\n');
+
+  if (!texto || texto.length < 20) {
+    toast('Primero pegá el contenido de la minuta');
+    return;
+  }
+
+  const btn = document.getElementById('btn-inferir');
+  const btnTxt = document.getElementById('btn-inferir-txt');
+  btn.disabled = true;
+  btnTxt.textContent = 'Detectando...';
+  btn.style.opacity = '.6';
+
+  // Armar contexto con productos ya conocidos para ayudar al modelo
+  const yaConocidos = todosProductos().map(([p]) => p);
+  const contextoProd = yaConocidos.length
+    ? `\n\nProductos que ya existen en el sistema (podés reutilizarlos si aplican): ${yaConocidos.join(', ')}`
+    : '';
+
+  const prompt = `Analizá el siguiente texto de una minuta de reunión o nota de producto e identificá todos los nombres de productos, sistemas, features, módulos o plataformas que se mencionan.
+
+Reglas:
+- Devolvé SOLO un array JSON con los nombres, sin texto adicional, sin markdown, sin explicaciones.
+- Usá el nombre exacto como aparece en el texto (respetá mayúsculas).
+- No incluyas nombres de personas, empresas clientes, ni conceptos genéricos (como "sistema", "plataforma", "app" sin nombre específico).
+- Si no encontrás ninguno, devolvé [].
+- Máximo 8 productos.${contextoProd}
+
+Texto:
+${texto}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data?.content?.[0]?.text?.trim() || '[]';
+
+    // Parsear JSON limpiando posibles backticks
+    let productos;
+    try {
+      productos = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch {
+      productos = [];
+    }
+
+    if (!Array.isArray(productos) || productos.length === 0) {
+      toast('No se detectaron productos en el texto');
+      return;
+    }
+
+    // Mostrar chips para que el usuario elija cuáles agregar
+    const panel = document.getElementById('prod-inferidos');
+    const chips = document.getElementById('prod-inferidos-chips');
+    panel.style.display = 'block';
+    chips.innerHTML = productos.map(p => {
+      const safe = p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return `<span class="tag tag-product" style="cursor:pointer;font-size:12px;padding:4px 10px;transition:opacity .15s"
+        title="Click para agregar"
+        onclick="agregarProdInferido(this, ${JSON.stringify(p)})">${safe} +</span>`;
+    }).join('');
+
+    toast(`${productos.length} producto${productos.length>1?'s':''} detectado${productos.length>1?'s':''}`);
+
+  } catch(err) {
+    toast('Error al conectar con la IA');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btnTxt.textContent = 'Detectar productos con IA';
+    btn.style.opacity = '1';
+  }
+}
+
+function agregarProdInferido(el, nombre) {
+  const inp = document.getElementById('inp-productos');
+  const ya = inp.value.split(',').map(x => x.trim()).filter(Boolean);
+  if (!ya.includes(nombre)) {
+    ya.push(nombre);
+    inp.value = ya.join(', ');
+    toast(`"${nombre}" agregado`);
+  }
+  // Marcar chip como agregado
+  el.style.opacity = '.4';
+  el.style.textDecoration = 'line-through';
+  el.style.cursor = 'default';
+  el.onclick = null;
+  mostrarSuggs();
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+cargar();
+</script>
+</body>
+</html>
