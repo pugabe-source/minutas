@@ -473,65 +473,53 @@ function setSyncing(on) {
   }
 }
 
-// ── OAuth — abre popup de Google ──────────────────────────────────────────────
+// ── OAuth — flujo de redirección (compatible con GitHub Pages) ───────────────
 
 function gdriveAuth() {
-  // Usar Google Identity Services (GIS) con token flow — no requiere backend
+  const saved = localStorage.getItem('minutas-gd-clientid');
   const clientId = prompt(
-    'Para conectar Google Drive necesitás un Client ID de Google OAuth.\n\n' +
-    'Pasos rápidos:\n' +
-    '1. Ir a console.cloud.google.com\n' +
-    '2. Crear proyecto → APIs → Google Drive API → Habilitar\n' +
-    '3. Credenciales → Crear credencial → ID de cliente OAuth\n' +
-    '   Tipo: Aplicación web\n' +
-    '   Origen autorizado: file:// (o tu dominio si lo subís)\n' +
-    '4. Copiar el Client ID y pegarlo acá\n\n' +
-    'Client ID:'
+    'Pegá tu Client ID de Google OAuth\n(termina en .apps.googleusercontent.com):',
+    saved || ''
   );
   if (!clientId || !clientId.includes('.apps.googleusercontent.com')) {
     if (clientId !== null) toast('Client ID inválido');
     return;
   }
   localStorage.setItem('minutas-gd-clientid', clientId);
-  _launchOAuth(clientId);
-}
 
-function _launchOAuth(clientId) {
+  // Guardar datos locales antes de redirigir para no perderlos
+  localStorage.setItem(STORE, JSON.stringify(eventos));
+
+  // Redirigir a Google OAuth — Google vuelve a esta misma página con el token en el hash
   const params = new URLSearchParams({
     client_id: clientId,
-    redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+    redirect_uri: window.location.origin + window.location.pathname,
     response_type: 'token',
     scope: GD_SCOPE,
     include_granted_scopes: 'true',
   });
-  // Abre popup de Google
-  const w = window.open(
-    'https://accounts.google.com/o/oauth2/v2/auth?' + params,
-    'gdrive-auth',
-    'width=500,height=620,left=200,top=100'
-  );
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params;
+}
 
-  // Pedir al usuario que pegue el token luego de autorizar
-  setTimeout(() => {
-    const token = prompt(
-      'En la ventana de Google que se abrió:\n' +
-      '1. Iniciá sesión y autorizá el acceso\n' +
-      '2. Copiá el "access_token" que aparece en la URL de redirección\n\n' +
-      '(La URL tendrá algo como: ...#access_token=ya29.xxxx&...)\n\n' +
-      'Pegá acá solo el token (empieza con "ya29."):'
-    );
-    if (token && token.startsWith('ya29.')) {
-      gdToken = token;
-      localStorage.setItem(GD_TOKEN_KEY, token);
-      setStatus('✓ Conectado a Drive', 'var(--accent)');
-      setSyncing(false);
-      toast('Google Drive conectado ✓');
-      // Intentar cargar datos desde Drive
-      cargarDesdeDrive();
-    } else if (token !== null) {
-      toast('Token inválido. Debe empezar con "ya29."');
-    }
-  }, 2000);
+// Leer token del hash de la URL si Google nos redirigió de vuelta
+function leerTokenDeURL() {
+  const hash = window.location.hash;
+  if (!hash.includes('access_token')) return false;
+  const params = new URLSearchParams(hash.slice(1)); // sacar el #
+  const token = params.get('access_token');
+  if (!token) return false;
+
+  gdToken = token;
+  localStorage.setItem(GD_TOKEN_KEY, token);
+
+  // Limpiar el hash de la URL sin recargar la página
+  history.replaceState(null, '', window.location.pathname);
+
+  setStatus('✓ Conectado a Drive', 'var(--accent)');
+  setSyncing(false);
+  toast('Google Drive conectado ✓');
+  cargarDesdeDrive();
+  return true;
 }
 
 // ── Guardar en Drive ──────────────────────────────────────────────────────────
@@ -649,10 +637,12 @@ function cargar() {
   document.getElementById('inp-fecha').value = hoy();
   badgePend();
 
-  // Restaurar token y fileId guardados
+  // Si Google nos redirigió de vuelta con un token en la URL, lo procesamos primero
+  if (leerTokenDeURL()) return;
+
+  // Restaurar token y fileId guardados de sesiones anteriores
   const savedToken  = localStorage.getItem(GD_TOKEN_KEY);
   const savedFileId = localStorage.getItem(GD_FILEID_KEY);
-  const savedCid    = localStorage.getItem('minutas-gd-clientid');
 
   if (savedToken) {
     gdToken  = savedToken;
